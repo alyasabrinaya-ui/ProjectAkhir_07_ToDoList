@@ -179,22 +179,32 @@ def cari_tugas():
             print("Kembali ke menu...")
             return
 
-        hasil = []
-        for index, t in enumerate(toodolist, 1):
-            if keyword.lower() in t["tugas"].lower():
-                hasil.append((index, t))
+        hasil = [(i, t) for i, t in enumerate(toodolist, 1) if keyword.lower() in t["tugas"].lower()]
 
         if len(hasil) == 0:
-            print("Tidak ada tugas yang cocok.")
-        else:
-            print("\n===== HASIL PENCARIAN =====")
-            for idx, tugas in hasil:
-                pin_symbol = "📌" if tugas["pin"] else ""
-                created = tugas.get("created_at", "-")
-                print(f"{idx}. {tugas['tugas']} [{tugas['kategori']}] - {tugas['status']} {pin_symbol}")
-                print(f"   Created: {created}")
-                print(f"   Deadline: {tugas.get('deadline', '-')}")
-        print()
+            print("\nTidak ada tugas yang cocok.\n")
+            continue
+        
+        print("\n----------- HASIL PENCARIAN -----------")
+        for index, tugas in hasil:
+            tanda_pin = "📌" if tugas.get("pin") else ""
+            created = tugas.get("created_at", "-")
+            deadline = tugas.get("deadline", "-")
+            work_time = tugas.get("work_time")
+            work_time_str = work_time.strftime("%Y-%m-%d %H:%M:%S") if work_time else "-"
+
+            print("┌─────────────────────────────────────────────────┐")
+            print(f"│            DETAIL TUGAS (No. {index})                 │")
+            print("├───────────────┬─────────────────────────────────┤")
+            print(f"│ Tugas         │ {tugas['tugas']:<24}{tanda_pin:<8}│")
+            print("├───────────────┼─────────────────────────────────┤")
+            print(f"│ Kategori      │ {tugas['kategori']:<30}  │")
+            print(f"│ Status        │ {tugas['status']:<30}  │")
+            print(f"│ Created       │ {created:<30}  │")
+            print(f"│ Deadline      │ {deadline:<30}  │")
+            print(f"│ Waktu Kerja   │ {work_time_str:<30}  │")
+            print(f"│ Prioritas     │ {tugas.get('priority','-'):<30}  │")
+            print("└─────────────────────────────────────────────────┘\n")
 
 
 def lihat_sampah():
@@ -203,10 +213,16 @@ def lihat_sampah():
         print("Sampah kosong.")
     else:
         for i, t in enumerate(trash, 1):
-            print(f"{i}. {t['tugas']} [{t['kategori']}] - {t['status']}")
-            print(f"   Deadline: {t.get('deadline', '-')}")
-            print(f"   Created: {t.get('created_at', '-')}")
-    print()
+            print("┌─────────────────────────────────────────────────┐")
+            print(f"│              SAMPAH TUGAS NOMOR. {i}              │")
+            print("├───────────────┬─────────────────────────────────┤")
+            print(f"│ Tugas         │ {t['tugas']:<30}  │")
+            print("├───────────────┼─────────────────────────────────┤")
+            print(f"│ Kategori      │ {t['kategori']:<30}  │")
+            print(f"│ Status        │ {t['status']:<30}  │")
+            print(f"│ Created       │ {t.get('created_at','-'):<30}  │")
+            print(f"│ Deadline      │ {t.get('deadline','-'):<30}  │")
+            print("└─────────────────────────────────────────────────┘\n")
 
 
 def restore_tugas():

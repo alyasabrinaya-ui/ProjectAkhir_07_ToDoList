@@ -8,6 +8,19 @@ kategori_list = ["kuliah", "kerja", "rumah", "penting", "proyek", "lainnya"]
 prioritas_list = ["Low", "Medium", "High"]
 
 
+def ask_yes_no(prompt: str) -> str:
+    """
+    Minta input konfirmasi 'y' atau 'n'.
+    Akan loop sampai user memasukkan 'y' atau 'n' (case-insensitive).
+    Mengembalikan 'y' atau 'n'.
+    """
+    while True:
+        jawab = input(prompt).strip().lower()
+        if jawab in ("y", "n"):
+            return jawab
+        print("Pilihan tidak valid! Masukkan 'y' atau 'n'.")
+
+
 def cek_duplikat(nama):
     for t in toodolist:
         if t["tugas"].lower() == nama.lower():
@@ -179,32 +192,34 @@ def cari_tugas():
             print("Kembali ke menu...")
             return
 
-        hasil = [(i, t) for i, t in enumerate(toodolist, 1) if keyword.lower() in t["tugas"].lower()]
+        hasil = []
+        for index, t in enumerate(toodolist, 1):
+            if keyword.lower() in t["tugas"].lower():
+                hasil.append((index, t))
 
         if len(hasil) == 0:
-            print("\nTidak ada tugas yang cocok.\n")
-            continue
-        
-        print("\n----------- HASIL PENCARIAN -----------")
-        for index, tugas in hasil:
-            tanda_pin = "📌" if tugas.get("pin") else ""
-            created = tugas.get("created_at", "-")
-            deadline = tugas.get("deadline", "-")
-            work_time = tugas.get("work_time")
-            work_time_str = work_time.strftime("%Y-%m-%d %H:%M:%S") if work_time else "-"
+            print("Tidak ada tugas yang cocok.")
+        else:
+            print("\n===== HASIL PENCARIAN =====")
+            for index, tugas in hasil:
+                tanda_pin = "📌" if tugas.get("pin") else " "
+                created = tugas.get("created_at", "-")
+                deadline = tugas.get("deadline", "-")
+                work_time = tugas.get("work_time")
+                work_time_str = work_time.strftime("%Y-%m-%d %H:%M:%S") if work_time else "-"
 
-            print("┌─────────────────────────────────────────────────┐")
-            print(f"│            DETAIL TUGAS (No. {index})                 │")
-            print("├───────────────┬─────────────────────────────────┤")
-            print(f"│ Tugas         │ {tugas['tugas']:<24}{tanda_pin:<8}│")
-            print("├───────────────┼─────────────────────────────────┤")
-            print(f"│ Kategori      │ {tugas['kategori']:<30}  │")
-            print(f"│ Status        │ {tugas['status']:<30}  │")
-            print(f"│ Created       │ {created:<30}  │")
-            print(f"│ Deadline      │ {deadline:<30}  │")
-            print(f"│ Waktu Kerja   │ {work_time_str:<30}  │")
-            print(f"│ Prioritas     │ {tugas.get('priority','-'):<30}  │")
-            print("└─────────────────────────────────────────────────┘\n")
+                print("┌─────────────────────────────────────────────────┐")
+                print(f"│            DETAIL TUGAS (No. {index})                 │")
+                print("├───────────────┬─────────────────────────────────┤")
+                print(f"│ Tugas         │ {tugas['tugas']:<24}{tanda_pin}      │")
+                print("├───────────────┼─────────────────────────────────┤")
+                print(f"│ Kategori      │ {tugas['kategori']:<30}  │")
+                print(f"│ Status        │ {tugas['status']:<30}  │")
+                print(f"│ Created       │ {created:<30}  │")
+                print(f"│ Deadline      │ {deadline:<30}  │")
+                print(f"│ Waktu Kerja   │ {work_time_str:<30}  │")
+                print(f"│ Prioritas     │ {tugas.get('priority','-'):<30}  │")
+                print("└─────────────────────────────────────────────────┘\n")
 
 
 def lihat_sampah():
@@ -266,9 +281,9 @@ def hapus_tugas():
         try:
             hapus = int(hapus) - 1
             if 0 <= hapus < len(toodolist):
-                konfirmasi = input(
+                konfirmasi = ask_yes_no(
                     f"Yakin ingin menghapus '{toodolist[hapus]['tugas']}'? (y/n): "
-                ).lower()
+                )
                 if konfirmasi == "y":
                     tugas_hapus = toodolist.pop(hapus)
                     trash.append(tugas_hapus)
@@ -375,7 +390,7 @@ def edit_tugas():
                     elif opsi == "6":
                         pinned_count = sum(1 for t in toodolist if t["pin"])
                         if tugas["pin"]:
-                            lepas = input("Tugas sudah di-pin. Lepas pin? (y/n): ").lower()
+                            lepas = ask_yes_no("Tugas sudah di-pin. Lepas pin? (y/n): ")
                             if lepas == "y":
                                 tugas["pin"] = False
                                 print("Pin dilepas.")
@@ -383,7 +398,7 @@ def edit_tugas():
                             if pinned_count >= MAX_PIN:
                                 print(f"Maksimal pin adalah {MAX_PIN}! Lepas pin lain sebelum menambah.")
                             else:
-                                pasang = input("Ingin mem-pin tugas ini? (y/n): ").lower()
+                                pasang = ask_yes_no("Ingin mem-pin tugas ini? (y/n): ")
                                 if pasang == "y":
                                     tugas["pin"] = True
                                     print("Tugas di-pin.")
@@ -417,15 +432,15 @@ def tugas_selesai():
             if 0 <= selesai < len(toodolist):
                 if toodolist[selesai]["status"] == "selesai":
                     print(f"Tugas '{toodolist[selesai]['tugas']}' sudah selesai!")
-                    ubah = input("Ubah menjadi belum selesai? (y/n): ").lower()
+                    ubah = ask_yes_no("Ubah menjadi belum selesai? (y/n): ")
                     if ubah == "y":
                         toodolist[selesai]["status"] = "belum selesai"
                         print("Status diubah.")
                         return
                     continue
-                konfirmasi = input(
+                konfirmasi = ask_yes_no(
                     f"Yakin ingin menandai '{toodolist[selesai]['tugas']}' sebagai selesai? (y/n): "
-                ).lower()
+                )
                 if konfirmasi == "y":
                     toodolist[selesai]["status"] = "selesai"
                     print(f"Tugas '{toodolist[selesai]['tugas']}' telah ditandai selesai.")
@@ -453,7 +468,7 @@ def pin_tugas():
             if 0 <= pilih < len(toodolist):
 
                 if toodolist[pilih]["pin"]:
-                    un = input("Tugas sudah di-pin. Lepas pin? (y/n): ").lower()
+                    un = ask_yes_no("Tugas sudah di-pin. Lepas pin? (y/n): ")
                     if un == "y":
                         toodolist[pilih]["pin"] = False
                         urutkan_tugas()
@@ -464,9 +479,9 @@ def pin_tugas():
                     print(f"Anda sudah mem-pin {MAX_PIN} tugas! Lepas pin salah satu dulu.")
                     return
 
-                konfirmasi = input(
+                konfirmasi = ask_yes_no(
                     f"Ingin mem-pin '{toodolist[pilih]['tugas']}'? (y/n): "
-                ).lower()
+                )
 
                 if konfirmasi == "y":
                     toodolist[pilih]["pin"] = True
@@ -561,4 +576,5 @@ def menu():
             print("Pilihan tidak valid!")
 
 
-menu()
+if _name_ == "_main_":
+    menu()
